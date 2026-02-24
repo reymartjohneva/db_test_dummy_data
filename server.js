@@ -11,10 +11,32 @@ const mysqlRoutes = require('./routes/mysql');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*'
-}));
+// Middleware - CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    // Allow all origins if CORS_ORIGIN is *
+    if (process.env.CORS_ORIGIN === '*') {
+      return callback(null, true);
+    }
+    
+    // Check if origin is in allowed list
+    const allowedOrigins = process.env.CORS_ORIGIN.split(',');
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Still allow for development
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
